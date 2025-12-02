@@ -19,9 +19,14 @@ def send_sequence():
         for row in table.get_children():
             table.delete(row)
 
-        # Fill table
+        # Fill table with color coding
         for i, item in enumerate(data["validation"]):
-            table.insert("", "end", values=(i+1, item["action"], item["result"]))
+            result = item["result"]
+            color = "green" if result == "valid" else "red"
+            table.insert("", "end", values=(i+1, item["action"], result), tags=(color,))
+
+        table.tag_configure("green", foreground="green")
+        table.tag_configure("red", foreground="red")
 
         # Update summary
         summary_label.config(text=data["summary"])
@@ -45,13 +50,21 @@ text_input.pack()
 btn = tk.Button(root, text="Verify Sequence", command=send_sequence)
 btn.pack(pady=10)
 
-# Table for results
+# Table with scrollbar
 columns = ("step", "action", "result")
-table = ttk.Treeview(root, columns=columns, show="headings")
+frame = tk.Frame(root)
+frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+scrollbar = tk.Scrollbar(frame)
+scrollbar.pack(side="right", fill="y")
+
+table = ttk.Treeview(frame, columns=columns, show="headings", yscrollcommand=scrollbar.set)
 table.heading("step", text="Step")
 table.heading("action", text="Action")
 table.heading("result", text="Result")
-table.pack(fill="both", expand=True, padx=20, pady=20)
+table.pack(fill="both", expand=True)
+
+scrollbar.config(command=table.yview)
 
 # Summary label
 summary_label = tk.Label(root, text="No verification yet.", font=("Arial", 14))

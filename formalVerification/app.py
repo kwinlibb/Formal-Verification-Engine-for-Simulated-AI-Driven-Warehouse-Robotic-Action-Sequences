@@ -24,19 +24,23 @@ def verify():
     all_valid = True
 
     for action in actions:
-        q = f"validate({action.lower()}, Result)."
+        action_atom = action.strip().lower()
+        q = f"validate('{action_atom}', Result)."
         res_list = list(prolog.query(q))
 
         if res_list:
             result = res_list[0]["Result"]
+
+            if isinstance(result, bytes):
+                result = result.decode("utf-8")
         else:
             result = "invalid_action"
-
-        results.append({"action": action, "result": result})
+        
+        results.append({"action": action_atom, "result": result})
 
         if result != "valid":
             all_valid = False
-
+            
     summary = "VALID SEQUENCE" if all_valid else "INVALID SEQUENCE"
 
     return jsonify({"validation": results, "summary": summary})
